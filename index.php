@@ -56,9 +56,12 @@ $hotels = [
 <body>
     <h1 class="text-center m-4">Lista Hotel</h1>
 
+    <!-- form con selezione parcheggio e inserimento voto dell'hotel -->
     <form class="text-center mb-3" action="" method=GET>
         <label for="">Parcheggio</label>
         <input type="checkbox" name="parking" id="true" <?php echo isset($_GET['parking']) ? 'checked' : '' ?>>
+        <label for="">Voto Min</label>
+        <input type="number" name="vote" id="" min=0 max=5 <?php echo isset($_GET['vote'])  ?? ''; ?>>
         <button class="btn btn-outline-primary btn-sm" type="submit">Cerca</button>
     </form>
 
@@ -79,12 +82,29 @@ $hotels = [
 
                 $filtered = $hotels;
 
-                if (isset($_GET['parking'])) {
-                    $filtered = array_filter($hotels, fn($hotel) => $hotel['parking'] === true);
+                // imposto la condizione se è selezionato il checkbox oppure c'è un voto
+                if (isset($_GET["parking"]) || isset($_GET["vote"])) {
+                    $filtered = array_filter($hotels, function ($hotel) {
+                        $pass = true;
+
+                        // se c'è il parcheggio pass resta vera
+                        if (isset($_GET["parking"])) {
+                            $pass = $pass && $hotel["parking"] === true;
+                        }
+
+                        // se il voto inserito è maggiore uguale di quello dell'hotel pass resta vera
+                        if (isset($_GET["vote"]) && is_numeric($_GET["vote"])) {
+                            $pass = $pass && $hotel["vote"] >= $_GET["vote"];
+                        }
+
+                        return $pass;
+                    });
                 }
 
+                // ciclo su tutti gli hotel
                 foreach ($filtered as $hotel) {
 
+                    // per ogni hotel stampa la riga con il valore della chiave corrispondente
                     echo "<tr>";
                     foreach ($hotel as $key => $value) {
                         echo "<td>" . $value . "</td>";
